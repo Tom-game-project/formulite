@@ -1,0 +1,3 @@
+# formulite
+
+## Simple formula parser
