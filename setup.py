@@ -5,7 +5,7 @@ with open("README.md",encoding="utf-8",mode="r")as f:
 
 setup(
     name="formulite",
-    version="0.0.0.dev0",
+    version="0.0.1.dev0",
     description='Simple Formula Parser',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -14,7 +14,5 @@ setup(
     license='MIT',
     keywords='parser, formula, formulite',
     python_requires='>=3',
-    packages=find_packages(
-        where="src.*"
-    )
+    packages=find_packages()
 )
