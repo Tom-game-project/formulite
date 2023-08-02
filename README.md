@@ -4,6 +4,9 @@
 
 <img src="https://raw.githubusercontent.com/Tom-game-project/formulite/e540bf0dc3b6858d99d71d20f7df76028be8419b/icon/formulite.svg">
 
+
+FormuLite is the simple formula parser.
+
 ## INSTALL
 
 ```bash
