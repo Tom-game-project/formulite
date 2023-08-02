@@ -14,5 +14,6 @@ setup(
     license='MIT',
     keywords='parser, formula, formulite',
     python_requires='>=3',
-    packages=find_packages()
+    packages=find_packages(),
+    url="https://github.com/Tom-game-project/formulite"
 )
