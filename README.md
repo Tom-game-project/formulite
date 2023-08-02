@@ -27,6 +27,7 @@ print(
 # return +[f['x'], *[g['x', 'y', 'z'], '5']]
 
 ```
-# LICENSE
+
+## LICENSE
 
 [MIT](https://github.com/Tom-game-project/formulite/blob/master/LICENSE.MIT)
