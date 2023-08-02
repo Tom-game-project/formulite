@@ -1,3 +1,4 @@
+LICENSE.MIT
 README.md
 setup.py
 formulite/__init__.py
@@ -6,5 +7,3 @@ formulite.egg-info/PKG-INFO
 formulite.egg-info/SOURCES.txt
 formulite.egg-info/dependency_links.txt
 formulite.egg-info/top_level.txt
-test/__init__.py
-test/main.py

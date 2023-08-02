@@ -5,7 +5,7 @@ with open("README.md",encoding="utf-8",mode="r")as f:
 
 setup(
     name="formulite",
-    version="0.0.1.dev0",
+    version="0.0.1",
     description='Simple Formula Parser',
     long_description=long_description,
     long_description_content_type='text/markdown',
