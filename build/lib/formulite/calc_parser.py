@@ -350,7 +350,7 @@ class parser:
         )
 
     def resolve(self):
-        return self.resolve_util(self.code)
+        return self.resolve_util(self.code)[0]
     def priority(self,vec:list[str])->int|None:
         #配列内にある最も優先順位が低い演算子を探します
         #返り値はindexです
@@ -426,11 +426,11 @@ if __name__=="__main__":
     ]
     """
     texts = [
-        "main(a,b,c)"
+        "f(x)+g(x,y,z)*5"
     ]
     for i in texts:
         par=parser(i)
-        print(par.resolve()[0])
+        print(par.resolve())
     el = elem("-sin(x)")
     print(el.elemtype)
     #print(

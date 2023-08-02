@@ -4,13 +4,13 @@
 
 <img src="icon/formulite.svg">
 
-## install
+## INSTALL
 
 ```bash
 pip install formulite
 ```
 
-## How to use
+## HOW TO USE
 
 ```python
 from formulite.calc_parser import parser
@@ -27,3 +27,6 @@ print(
 # return +[f['x'], *[g['x', 'y', 'z'], '5']]
 
 ```
+# LICENSE
+
+[MIT](https://github.com/Tom-game-project/formulite/blob/master/LICENSE.MIT)
