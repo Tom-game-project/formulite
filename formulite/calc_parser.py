@@ -470,10 +470,12 @@ class Wat_data_type(Enum):
     F32 = auto()
     F64 = auto()
 
+
 class Wat_role(Enum):
     CONST = auto()
     VALUE = auto()
     OPE   = auto()
+
 
 # parserで変換した後のtreeデータに対して処理を施します
 class tree2wat:
@@ -551,6 +553,7 @@ class tree2wat:
             rdata += self.role_conv(i[0], i[1])
             rdata += '\n'
         return rdata
+
 
 ## test functions
 def __test_00():
