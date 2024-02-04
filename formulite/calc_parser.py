@@ -1,8 +1,7 @@
-
-
 from enum import Enum,auto
 
 class func:
+
     def __init__(self,funccode:str):
         self.code:str=funccode
         funcname, funcargs=self.split()
@@ -10,8 +9,10 @@ class func:
         if " " in self.funcname:
             raise BaseException("関数名に半角スペースを入れないでください")
         self.funcargs=self.split_args(funcargs)
+
     @classmethod
     def new(cls,code:str):return func(code)
+
     def check_funcname(self,text:str)->str:
         #funcname内の文字列がすべて有効かどうかを調べる関数
         if text[0]==" ":#半角スペースが文字列の前に入っていた場合
@@ -28,6 +29,7 @@ class func:
             funcname:str = self.code[:index]
             funcargs:str = self.code[index:]
         return funcname,funcargs
+
     def split_args(self,funcargs):
         #引数を抽出する
         depth:int=0
@@ -55,17 +57,22 @@ class func:
         if arg:
             args.append(arg)
         return args
+
     @property
     def data(self):
         funcname,funcargs = self.split()
         funcname = self.check_funcname(funcname)
         return [funcname]+self.split_args(funcargs)
+
     def __repr__(self) -> str:
         return f"name:'{self.funcname}'\nargs:{self.funcargs}"
 
+
 class brackets:
+
     def __init__(self,bracketscode:str):
         self.code:str=bracketscode
+
     @classmethod
     def new(cls,code):return brackets(code)
 
@@ -84,26 +91,32 @@ class brackets:
                     if depth>0:rlist.append(i)
         rtext = "".join(rlist)
         return self.__inner_content(rtext) if elem.new(rtext).elemtype is Elem_type.BRACKETS else rtext
+
     @property
     def inner(self)->str:
         return self.__inner_content(self.code)
 
 class value:
+
     def __init__(self,code:str):
         self.code:str=self.check_valuename(code)
         if " " in self.code:
             raise BaseException("半角スペースが入っています")
+
     @classmethod
     def new(cls,code:str):return value(code)
+
     def check_valuename(self,valuename:str)->str:
         if valuename[0]==" ":
             return self.check_valuename(valuename[1:])
         if valuename[-1]==" ":
             return self.check_valuename(valuename[:-1])
         return valuename
+
     @property
     def inner(self):
         return self.code
+
 
 class Elem_type(Enum):
     #type of elem
@@ -115,7 +128,9 @@ class Elem_type(Enum):
     VALUE     = auto()
     FORMULA   = auto()
 
+
 class elem:
+
     #式のelement
     def __init__(self,code):
         """
@@ -145,6 +160,7 @@ class elem:
                 return True
             else:
                 return False
+
     def __is_BRACKETS(self,code:str)->bool:
         group:list[bool]=[]
         depth:int=0
@@ -161,6 +177,7 @@ class elem:
                 case _:
                     group.append(depth>0)
         return all(group)
+
     def __is_NUMBER(self,code:str)->bool:
         #⚠️少数点の場合も含む
         #アンダースコアは許容しない(とりあえずは。。。)
@@ -185,12 +202,14 @@ class elem:
                 return False
 
         return True
+
     def __is_OPERATION(self,code:str)->bool:
         opelist:list[str] = ["+","-","*","/","%","^","@"]
         for i in opelist:
             if i==code:
                 return True
         return False
+
     def __is_VALUE(self,code:str)->bool:
         for i in code:
             if i in self.availablechars:
@@ -200,6 +219,7 @@ class elem:
             else:
                 return False
         return True
+
     def __is_FORMULA(self,code:str)->bool:
         depth:int=0
         for i in code:
@@ -234,6 +254,7 @@ class elem:
             return Elem_type.OTHER
 
 class parser:
+
     def __init__(self,code:str):
         self.code:str=code
         self.availablechars:list[str]=[
@@ -243,6 +264,7 @@ class parser:
         ]+[
                 str(i) for i in range(10)      #0~9
         ]
+
     def grouping_number(self,vec:str)->list[str]:
         #numberをまとめる
         rlist:list[str]=list()
@@ -261,6 +283,7 @@ class parser:
         if flag:
             rlist.append("".join(group))
         return rlist
+
     def grouping_brackets(self,vec:list[str])->list[str]:
         #functionをまとめる
         rlist:list[str]=list()
@@ -296,6 +319,7 @@ class parser:
                         rlist.append(i)
 
         return rlist
+
     def split_symbol(self,vec:list[str])->list[str]:
         rlist:list[str]=list()
         group:list[str]=list()
@@ -311,6 +335,7 @@ class parser:
         if group:
             rlist.append("".join(group))
         return rlist
+
     def code2vec(self)->list[str]:
         vec=self.grouping_number(self.code)
         vec=self.grouping_brackets(vec)
@@ -319,6 +344,7 @@ class parser:
 
     def is_Formula(self,code:str)->bool:
         return elem.new(code).elemtype is Elem_type.FORMULA
+
     def resolve_operation(self,code:str):
         #逆ポーランド記法の返り値
         #引数が二つであると決定した
@@ -336,12 +362,14 @@ class parser:
                 Elem_type.OPERATION,
                 [*self.resolve_util(E1),*self.resolve_util(E2)]
             )
+
     def resolve_util(self,E):
         return                                                 self.resolve_operation(E)\
             if self.is_Formula(E)                         else self.resolve_operation(brackets.new(E).inner) \
             if elem.new(E).elemtype is Elem_type.BRACKETS else self.resolve_function(E) \
             if elem.new(E).elemtype is Elem_type.FUNCTION else value.new(E).inner \
             if elem.new(E).elemtype is Elem_type.VALUE    else E , #カンマとるなよ絶対に！
+
     def resolve_function(self,code:str):
         funcdata = func.new(code).data
         funcname=funcdata[0]
@@ -354,6 +382,7 @@ class parser:
 
     def resolve(self):
         return self.resolve_util(self.code)[0]
+
     def priority(self,vec:list[str])->int|None:
         #配列内にある最も優先順位が低い演算子を探します
         #返り値はindexです
@@ -387,11 +416,14 @@ class parser:
         #最も計算順位が1番低いindexを返す
         return index
 
+
 class formula_tree:
+
     def __init__(self,name:str,type_:Elem_type,args:list):
         self.name:str=self.ope2func(name)
         self.args:list=args
         self.selftype:Elem_type=type_
+
     def ope2func(self,name:str)->str:
         """
         演算子を関数のように見る
@@ -411,8 +443,10 @@ class formula_tree:
                 return "@"
             case _:
                 return name
+
     def __getitem__(self,key):
         return self.args[key]
+
     def __repr__(self):
         return f"({' '.join(map(repr,self.args))} {self.name})"
         
