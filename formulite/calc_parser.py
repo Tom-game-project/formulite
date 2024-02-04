@@ -1,4 +1,5 @@
 from enum import Enum,auto
+from pprint import pprint
 
 class func:
 
@@ -95,6 +96,7 @@ class brackets:
     @property
     def inner(self)->str:
         return self.__inner_content(self.code)
+
 
 class value:
 
@@ -252,6 +254,7 @@ class elem:
             return Elem_type.VALUE
         else:
             return Elem_type.OTHER
+
 
 class parser:
 
@@ -460,10 +463,26 @@ class formula_tree:
             return f"({' '.join(map(repr,self.args))} {self.name})"
         return f"({' '.join(map(repr,self.args))} {self.name})"
 
+
+class Wat_data_type(Enum):
+    I32 = auto()
+    I64 = auto()
+    F32 = auto()
+    F64 = auto()
+
+class Wat_role(Enum):
+    CONST = auto()
+    VALUE = auto()
+    OPE   = auto()
+
 # parserで変換した後のtreeデータに対して処理を施します
 class tree2wat:
 
-    def __init__(self,tree:formula_tree):
+    def __init__(self,tree:formula_tree ,data_type = Wat_data_type.I32):
+        #
+        self.data_type = data_type
+
+        # 
         self.tree = tree
         self.ope_dict = {
             "+" : "add",
@@ -474,20 +493,32 @@ class tree2wat:
         }
         self.stack:list = []
 
+    def is_num(self,text:str):
+        for i in text:
+            if '0' <= i <= '9' or i==".":
+                pass
+            else:
+                return False
+        return True
+
     # wat形式のsukuriputoを出力する
-    def gen_code(self):
+    def gen_code(self) -> list:
         self.gen_code_rec(self.tree)
         return self.stack
 
-
     def gen_code_rec(self,parent:formula_tree):
         if type(parent) is str:
-            self.stack.append(parent)
+            if self.is_num(parent):
+                self.stack.append((Wat_role.CONST,parent))
+            else:
+                self.stack.append((Wat_role.VALUE,parent))
         else:
             for i in parent.args:
                 self.gen_code_rec(i)
-            self.stack.append(parent.name)
-
+            self.stack.append((Wat_role.OPE,parent.name))
+    
+    def conv2wat(self):
+        
 
 ## test functions
 def __test_00():
@@ -521,10 +552,12 @@ def __test_00():
 
 
 def __test_01():
-    par = parser("gcd(b,a % b)",mode="PM")
+    #par = parser("gcd(b,a % b)",mode="PM")
+    # 空文字は 0 として扱う
+    par = parser("a / b*(c+d)",mode="PM")
     tree = par.resolve()
     wat_conv = tree2wat(tree)
-    print(wat_conv.gen_code())
+    pprint(wat_conv.gen_code())
 
 if __name__=="__main__":
     # __test_00()
