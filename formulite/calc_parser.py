@@ -458,7 +458,7 @@ class formula_tree:
     def __repr__(self):
 
         if self.mode == "lisp" or self.mode == "RPM":
-            return f"({self.name} {' '.join(map(repr,self.args))})"
+            return f"({self.name} {' '.join(map(lambda a:str(a) if type(a) is str else repr(a),self.args))})"
         elif self.mode == "PM":
             return f"({' '.join(map(repr,self.args))} {self.name})"
         return f"({' '.join(map(repr,self.args))} {self.name})"
@@ -534,7 +534,7 @@ class tree2wat:
         if ope_name in self.ope_dict:
             return '.'.join([self.type_str(), self.ope_dict[ope_name]])
         else:
-            return ' '.join(["call",ope_name])
+            return ' '.join(["call", '$'+ope_name])
 
     def role_conv(self, a0:Wat_role, a1:str) -> str:
         match a0:
@@ -589,10 +589,11 @@ def __test_00():
 def __test_01():
     #par = parser("gcd(b,a % b)",mode="PM")
     # 空文字は 0 として扱う
-    par = parser("a / b*(c+d)",mode="PM")
+    par = parser("gcd(b,a%b)",mode="lisp")
     tree = par.resolve()
     wat_conv = tree2wat(tree)
     stack = wat_conv.gen_code()
+    print(tree)
     pprint(stack)
     print(wat_conv.conv2wat(stack))
 
