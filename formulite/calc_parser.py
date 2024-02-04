@@ -534,7 +534,7 @@ class tree2wat:
         if ope_name in self.ope_dict:
             return '.'.join([self.type_str(), self.ope_dict[ope_name]])
         else:
-            return '.'.join(["call",ope_name])
+            return ' '.join(["call",ope_name])
 
     def role_conv(self, a0:Wat_role, a1:str) -> str:
         match a0:

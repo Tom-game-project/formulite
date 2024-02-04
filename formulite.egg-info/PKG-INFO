@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: formulite
-Version: 0.0.2
+Version: 0.0.3
 Summary: Simple Formula Parser
 Home-page: https://github.com/Tom-game-project/formulite
 Author: Tom0427
@@ -16,6 +16,8 @@ License-File: LICENSE.MIT
 ## Simple formula parser
 
 <img src="https://raw.githubusercontent.com/Tom-game-project/formulite/e540bf0dc3b6858d99d71d20f7df76028be8419b/icon/formulite.svg">
+
+FormuLite is the simple formula parser.
 
 ## INSTALL
 
@@ -40,6 +42,7 @@ print(
 # return +[f['x'], *[g['x', 'y', 'z'], '5']]
 
 ```
-# LICENSE
+
+## LICENSE
 
 [MIT](https://github.com/Tom-game-project/formulite/blob/master/LICENSE.MIT)
