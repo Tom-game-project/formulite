@@ -506,19 +506,51 @@ class tree2wat:
         self.gen_code_rec(self.tree)
         return self.stack
 
-    def gen_code_rec(self,parent:formula_tree):
+    def gen_code_rec(self, parent:formula_tree):
         if type(parent) is str:
             if self.is_num(parent):
-                self.stack.append((Wat_role.CONST,parent))
+                self.stack.append((Wat_role.CONST, parent))
             else:
-                self.stack.append((Wat_role.VALUE,parent))
+                self.stack.append((Wat_role.VALUE, parent))
         else:
             for i in parent.args:
                 self.gen_code_rec(i)
-            self.stack.append((Wat_role.OPE,parent.name))
-    
-    def conv2wat(self):
-        
+            self.stack.append((Wat_role.OPE, parent.name))
+
+    def type_str(self):
+        match self.data_type:
+            case Wat_data_type.I32:
+                return"i32"
+            case Wat_data_type.I64:
+                return"i64"
+            case Wat_data_type.F32:
+                return"f32"
+            case Wat_data_type.F64:
+                return"f64"
+
+    def ope_resolve(self,ope_name:str):
+        if ope_name in self.ope_dict:
+            return '.'.join([self.type_str(), self.ope_dict[ope_name]])
+        else:
+            return '.'.join(["call",ope_name])
+
+    def role_conv(self, a0:Wat_role, a1:str) -> str:
+        match a0:
+            case Wat_role.CONST:
+                return '.'.join([self.type_str(), "const"]) + ' ' + a1
+            case Wat_role.VALUE:
+                return '.'.join(["local", "get"]) + ' ' + '$' + a1
+            case Wat_role.OPE:
+                return self.ope_resolve(a1)
+            case _:
+                BaseException("Error!")
+
+    def conv2wat(self, stack_data:list):
+        rdata:str = ""
+        for i in stack_data:
+            rdata += self.role_conv(i[0], i[1])
+            rdata += '\n'
+        return rdata
 
 ## test functions
 def __test_00():
@@ -557,7 +589,9 @@ def __test_01():
     par = parser("a / b*(c+d)",mode="PM")
     tree = par.resolve()
     wat_conv = tree2wat(tree)
-    pprint(wat_conv.gen_code())
+    stack = wat_conv.gen_code()
+    pprint(stack)
+    print(wat_conv.conv2wat(stack))
 
 if __name__=="__main__":
     # __test_00()
