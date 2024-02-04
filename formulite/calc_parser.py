@@ -1,7 +1,3 @@
-"""
-
-"""
-
 
 
 from enum import Enum,auto
@@ -169,15 +165,22 @@ class elem:
         #⚠️少数点の場合も含む
         #アンダースコアは許容しない(とりあえずは。。。)
         group:list[str]=[]
+        space_flag = False
+        end_flag = False
         nums:list[str]=list(map(str,range(10)))#1~10の数字のリスト
         for i in code:
-            if i in nums:
+            if (i in nums) and end_flag == False:
                 group.append(i)
+                end_flag = True
             elif i==".":
                 if group:
                     group.append(i)
                 else:
                     raise BaseException("小数点が先頭についてしまっていますよ")
+            elif i == " " and space_flag == False:
+                pass
+            elif i == " " and space_flag == True:
+                end_flag = True
             else:
                 return False
 
@@ -334,11 +337,11 @@ class parser:
                 [*self.resolve_util(E1),*self.resolve_util(E2)]
             )
     def resolve_util(self,E):
-        return self.resolve_operation(E)\
-            if self.is_Formula(E) else self.resolve_operation(brackets.new(E).inner)\
-            if elem.new(E).elemtype is Elem_type.BRACKETS else self.resolve_function(E)\
-            if elem.new(E).elemtype is Elem_type.FUNCTION else value.new(E).inner\
-            if elem.new(E).elemtype is Elem_type.VALUE else E,#カンマとるなよ絶対に！
+        return                                                 self.resolve_operation(E)\
+            if self.is_Formula(E)                         else self.resolve_operation(brackets.new(E).inner) \
+            if elem.new(E).elemtype is Elem_type.BRACKETS else self.resolve_function(E) \
+            if elem.new(E).elemtype is Elem_type.FUNCTION else value.new(E).inner \
+            if elem.new(E).elemtype is Elem_type.VALUE    else E , #カンマとるなよ絶対に！
     def resolve_function(self,code:str):
         funcdata = func.new(code).data
         funcname=funcdata[0]
@@ -411,26 +414,32 @@ class formula_tree:
     def __getitem__(self,key):
         return self.args[key]
     def __repr__(self):
-        return f"{self.name}{self.args}"
-
+        return f"({' '.join(map(repr,self.args))} {self.name})"
+        
 
 if __name__=="__main__":
-    """texts=[
+    texts=[
     " 10 + ( x + log10(2) * sin(x) ) * log10(x)",
     "(-sin(x)*3)+(-2*cos(x))",
     "pi",
     "sin(x)",
     "(1)+2",
     "3.14",
-    "-8+6"
+    "-8+6",
+    "a / b*(c+d)",
+    "a / (b*(c+d))",
+    "a*a*a",
+    "x^3+x^2+3",
+    "2*cube(x)+3*squared(x)+3"
     ]
     """
     texts = [
         "f(x)+g(x,y,z)*5"
     ]
+    """
     for i in texts:
         par=parser(i)
-        print(par.resolve())
+        print("resolve",par.resolve())
     el = elem("-sin(x)")
     print(el.elemtype)
     #print(
