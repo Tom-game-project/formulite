@@ -255,8 +255,9 @@ class elem:
 
 class parser:
 
-    def __init__(self,code:str):
+    def __init__(self,code:str,mode = "lisp"):
         self.code:str=code
+        self.mode = mode
         self.availablechars:list[str]=[
                 chr(i) for i in range(65,65+26)#A~Z
         ]+[
@@ -360,7 +361,8 @@ class parser:
         return formula_tree(
                 ope,
                 Elem_type.OPERATION,
-                [*self.resolve_util(E1),*self.resolve_util(E2)]
+                [*self.resolve_util(E1),*self.resolve_util(E2)],
+                self.mode
             )
 
     def resolve_util(self,E):
@@ -377,7 +379,8 @@ class parser:
         return formula_tree(
             funcname,
             Elem_type.FUNCTION,
-            [self.resolve_util(i)[0] for i in funcdata[1:]]
+            [self.resolve_util(i)[0] for i in funcdata[1:]],
+            mode=self.mode
         )
 
     def resolve(self):
@@ -419,7 +422,9 @@ class parser:
 
 class formula_tree:
 
-    def __init__(self,name:str,type_:Elem_type,args:list):
+    # mode : lisp(RPM)|PM|wat(wasm)
+    def __init__(self,name:str,type_:Elem_type,args:list,mode="lisp"):
+        self.mode = mode
         self.name:str=self.ope2func(name)
         self.args:list=args
         self.selftype:Elem_type=type_
@@ -448,10 +453,44 @@ class formula_tree:
         return self.args[key]
 
     def __repr__(self):
-        return f"({' '.join(map(repr,self.args))} {self.name})"
-        
 
-if __name__=="__main__":
+        if self.mode == "lisp" or self.mode == "RPM":
+            return f"({self.name} {' '.join(map(repr,self.args))})"
+        elif self.mode == "PM":
+            return f"({' '.join(map(repr,self.args))} {self.name})"
+        return f"({' '.join(map(repr,self.args))} {self.name})"
+
+# parserで変換した後のtreeデータに対して処理を施します
+class tree2wat:
+
+    def __init__(self,tree:formula_tree):
+        self.tree = tree
+        self.ope_dict = {
+            "+" : "add",
+            "-" : "sub",
+            "*" : "mul",
+            "/" : "div",
+            "%" : "rem_u",
+        }
+        self.stack:list = []
+
+    # wat形式のsukuriputoを出力する
+    def gen_code(self):
+        self.gen_code_rec(self.tree)
+        return self.stack
+
+
+    def gen_code_rec(self,parent:formula_tree):
+        if type(parent) is str:
+            self.stack.append(parent)
+        else:
+            for i in parent.args:
+                self.gen_code_rec(i)
+            self.stack.append(parent.name)
+
+
+## test functions
+def __test_00():
     texts=[
     " 10 + ( x + log10(2) * sin(x) ) * log10(x)",
     "(-sin(x)*3)+(-2*cos(x))",
@@ -472,7 +511,7 @@ if __name__=="__main__":
     ]
     """
     for i in texts:
-        par=parser(i)
+        par=parser(i,mode="PM")
         print("resolve",par.resolve())
     el = elem("-sin(x)")
     print(el.elemtype)
@@ -480,6 +519,16 @@ if __name__=="__main__":
     #    elem.new(" sin(x) ").elemtype
     #)
 
+
+def __test_01():
+    par = parser("gcd(b,a % b)",mode="PM")
+    tree = par.resolve()
+    wat_conv = tree2wat(tree)
+    print(wat_conv.gen_code())
+
+if __name__=="__main__":
+    # __test_00()
+    __test_01()
 
 """
 fn f(){
