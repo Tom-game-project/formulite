@@ -14,7 +14,7 @@ class func:
     @classmethod
     def new(cls,code:str):return func(code)
 
-    def check_funcname(self,text:str)->str:
+    def check_funcname(self,text:str) -> str:
         #funcname内の文字列がすべて有効かどうかを調べる関数
         if text[0]==" ":#半角スペースが文字列の前に入っていた場合
             return self.check_funcname(text[1:])
@@ -22,7 +22,7 @@ class func:
             return self.check_funcname(text[:-1])
         return text
 
-    def split(self)->tuple[str,str]:
+    def split(self) -> tuple[str,str]:
         index = self.code.find("(")
         if index<0:
             raise BaseException("引数部分の文法が不正だと思われます。おそらく")
@@ -33,28 +33,28 @@ class func:
 
     def split_args(self,funcargs):
         #引数を抽出する
-        depth:int=0
-        args:list[str]=[]
-        arg:str=""
+        depth:int = 0
+        args:list[str] = []
+        arg:str = ""
         for i in funcargs:
             match i:
                 case "(":
-                    if depth>0:
-                        arg+=i
-                    depth+=1
+                    if depth > 0:
+                        arg += i
+                    depth += 1
                 case ")":
-                    depth-=1
-                    if depth>0:
-                        arg+=i
+                    depth -= 1
+                    if depth > 0:
+                        arg += i
                 case _:
-                    if depth>1:
-                        arg+=i
+                    if depth > 1:
+                        arg += i
                     else:
-                        if i==",":
+                        if i == ",":
                             args.append(arg)
-                            arg=""
+                            arg = ""
                         else:
-                            arg+=i
+                            arg += i
         if arg:
             args.append(arg)
         return args
@@ -63,7 +63,7 @@ class func:
     def data(self):
         funcname,funcargs = self.split()
         funcname = self.check_funcname(funcname)
-        return [funcname]+self.split_args(funcargs)
+        return [funcname] + self.split_args(funcargs)
 
     def __repr__(self) -> str:
         return f"name:'{self.funcname}'\nargs:{self.funcargs}"
@@ -72,46 +72,46 @@ class func:
 class brackets:
 
     def __init__(self,bracketscode:str):
-        self.code:str=bracketscode
+        self.code:str = bracketscode
 
     @classmethod
     def new(cls,code):return brackets(code)
 
     def __inner_content(self,code:str):
         depth:int=0
-        rlist:list[str]=[]
+        rlist:list[str] = list()
         for i in code:
             match i:
                 case "(":
-                    if depth>0:rlist.append(i)
-                    depth+=1
+                    if depth > 0:rlist.append(i)
+                    depth += 1
                 case ")":
-                    depth-=1
-                    if depth>0:rlist.append(i)
+                    depth -= 1
+                    if depth > 0:rlist.append(i)
                 case _:
-                    if depth>0:rlist.append(i)
+                    if depth > 0:rlist.append(i)
         rtext = "".join(rlist)
         return self.__inner_content(rtext) if elem.new(rtext).elemtype is Elem_type.BRACKETS else rtext
 
     @property
-    def inner(self)->str:
+    def inner(self) -> str:
         return self.__inner_content(self.code)
 
 
 class value:
 
     def __init__(self,code:str):
-        self.code:str=self.check_valuename(code)
+        self.code:str = self.check_valuename(code)
         if " " in self.code:
             raise BaseException("半角スペースが入っています")
 
     @classmethod
     def new(cls,code:str):return value(code)
 
-    def check_valuename(self,valuename:str)->str:
-        if valuename[0]==" ":
+    def check_valuename(self,valuename:str) -> str:
+        if valuename[0] == " ":
             return self.check_valuename(valuename[1:])
-        if valuename[-1]==" ":
+        if valuename[-1] == " ":
             return self.check_valuename(valuename[:-1])
         return valuename
 
@@ -138,21 +138,21 @@ class elem:
         """
 
         """
-        self.availablechars:list[str]=[
+        self.availablechars:list[str] = [
                 chr(i) for i in range(65,65+26)#A~Z
         ]+[
                 chr(i) for i in range(97,97+26)#a~z
         ]+[
                 str(i) for i in range(10)      #0~9
         ]
-        self.code=code
+        self.code = code
     @classmethod
     def new(cls,code):return elem(code)
 
     #bool
-    def __is_FUNCTION(self,code:str)->bool:#工事中
+    def __is_FUNCTION(self,code:str) -> bool:#工事中
         index = code.find("(")
-        if index<0:
+        if index < 0:
             return False
         else:
             funcname:str = code[:index]
@@ -163,35 +163,35 @@ class elem:
             else:
                 return False
 
-    def __is_BRACKETS(self,code:str)->bool:
-        group:list[bool]=[]
-        depth:int=0
+    def __is_BRACKETS(self,code:str) -> bool:
+        group:list[bool] = []
+        depth:int = 0
         for i in code:
             match i:
                 case "(":
-                    depth+=1
-                    group.append(depth>0)
+                    depth += 1
+                    group.append(depth > 0)
                 case ")":
-                    group.append(depth>0)
-                    depth-=1
+                    group.append(depth > 0)
+                    depth -= 1
                 case " ":
                     pass
                 case _:
-                    group.append(depth>0)
+                    group.append(depth > 0)
         return all(group)
 
-    def __is_NUMBER(self,code:str)->bool:
+    def __is_NUMBER(self,code:str) -> bool:
         #⚠️少数点の場合も含む
         #アンダースコアは許容しない(とりあえずは。。。)
-        group:list[str]=[]
+        group:list[str] = []
         space_flag = False
         end_flag = False
-        nums:list[str]=list(map(str,range(10)))#1~10の数字のリスト
+        nums:list[str] = list(map(str,range(10)))#1~10の数字のリスト
         for i in code:
             if (i in nums) and end_flag == False:
                 group.append(i)
                 end_flag = True
-            elif i==".":
+            elif i == ".":
                 if group:
                     group.append(i)
                 else:
@@ -205,14 +205,14 @@ class elem:
 
         return True
 
-    def __is_OPERATION(self,code:str)->bool:
+    def __is_OPERATION(self,code:str) -> bool:
         opelist:list[str] = ["+","-","*","/","%","^","@"]
         for i in opelist:
-            if i==code:
+            if i == code:
                 return True
         return False
 
-    def __is_VALUE(self,code:str)->bool:
+    def __is_VALUE(self,code:str) -> bool:
         for i in code:
             if i in self.availablechars:
                 pass
@@ -222,16 +222,16 @@ class elem:
                 return False
         return True
 
-    def __is_FORMULA(self,code:str)->bool:
-        depth:int=0
+    def __is_FORMULA(self,code:str) -> bool:
+        depth:int = 0
         for i in code:
             match i:
                 case "(":
-                    depth+=1
+                    depth += 1
                 case ")":
-                    depth-=1
+                    depth -= 1
                 case _:
-                    if depth>0:
+                    if depth > 0:
                         pass
                     else:
                         if i in ["+","-","*","/","%","^","@"]:
@@ -239,7 +239,7 @@ class elem:
         return False
 
     @property
-    def elemtype(self)->Elem_type:
+    def elemtype(self) -> Elem_type:
         if self.__is_OPERATION(self.code):
             return Elem_type.OPERATION
         elif self.__is_NUMBER(self.code):
@@ -259,61 +259,67 @@ class elem:
 class parser:
 
     def __init__(self,code:str,mode = "lisp"):
-        self.code:str=code
+        self.code:str = code
         self.mode = mode
         self.availablechars:list[str]=[
-                chr(i) for i in range(65,65+26)#A~Z
+                chr(i) for i in range(65, 65 + 26)#A~Z
         ]+[
-                chr(i) for i in range(97,97+26)#a~z
+                chr(i) for i in range(97, 97 + 26)#a~z
         ]+[
                 str(i) for i in range(10)      #0~9
         ]
+        self.rankinglist:dict = {
+            #演算子優先順位
+            "+":1,"-":1,
+            "*":2,"/":2,"%":2,"@":2,
+            "^":3
+        }
 
-    def grouping_number(self,vec:str)->list[str]:
+    def grouping_number(self,vec:str) -> list[str]:
         #numberをまとめる
-        rlist:list[str]=list()
-        group:list[str]=list()
-        flag:bool=False
+        rlist:list[str] = list()
+        group:list[str] = list()
+        flag:bool = False
         for i in vec:
             if i in self.availablechars:
                 group.append(i)
-                flag=True
+                flag = True
             else:
                 if flag:
                     rlist.append("".join(group))
-                    group=[]
-                    flag=False
+                    group = []
+                    flag = False
                 rlist.append(i)
         if flag:
             rlist.append("".join(group))
         return rlist
 
-    def grouping_brackets(self,vec:list[str])->list[str]:
+    def grouping_brackets(self,vec:list[str]) -> list[str]:
         #functionをまとめる
-        rlist:list[str]=list()
-        group:list[str]=list()
-        depth:int=0
-        flag:bool=False
+        rlist:list[str] = list()
+        group:list[str] = list()
+        depth:int = 0
+        flag:bool = False
         for i in vec:
             match i:
                 case "(":
-                    if depth>0:
+                    if depth > 0:
                         group.append(i)
-                    elif depth==0:
+                    elif depth == 0:
                         group.append(i)
-                        flag=True
+                        flag = True
                     else:
                         raise BaseException("括弧を閉じ忘れている可能性があります")
-                    depth+=1
+                    depth += 1
                 case ")":
-                    depth-=1
-                    if depth>0:
+                    depth -= 1
+                    if depth > 0:
                         group.append(i)
-                    elif depth==0:
+                    elif depth == 0:
                         group.append(i)
                         rlist.append("".join(group))
-                        group=[]
-                        flag=False
+                        group = []
+                        flag = False
                     else:
                         raise BaseException("括弧を開き過ぎている可能性があります")
                 case _:
@@ -324,15 +330,15 @@ class parser:
 
         return rlist
 
-    def split_symbol(self,vec:list[str])->list[str]:
-        rlist:list[str]=list()
-        group:list[str]=list()
+    def split_symbol(self,vec:list[str]) -> list[str]:
+        rlist:list[str] = list()
+        group:list[str] = list()
         for i in vec:
             match i:
                 case "+"|"-"|"*"|"/"|"%"|"@"|"^":
                     if group:#groupがからでなければ
                         rlist.append("".join(group))
-                        group=list()
+                        group = list()
                     rlist.append(i)
                 case _:
                     group.append(i)
@@ -340,16 +346,16 @@ class parser:
             rlist.append("".join(group))
         return rlist
 
-    def code2vec(self)->list[str]:
-        vec=self.grouping_number(self.code)
-        vec=self.grouping_brackets(vec)
-        vec=self.split_symbol(vec)
+    def code2vec(self) -> list[str]:
+        vec = self.grouping_number(self.code)
+        vec = self.grouping_brackets(vec)
+        vec = self.split_symbol(vec)
         return vec
 
-    def is_Formula(self,code:str)->bool:
+    def is_Formula(self,code:str) -> bool:
         return elem.new(code).elemtype is Elem_type.FORMULA
 
-    def resolve_operation(self,code:str):
+    def resolve_operation(self,code:str) -> "formula_tree":
         #逆ポーランド記法の返り値
         #引数が二つであると決定した
         par = parser(code)
@@ -357,9 +363,9 @@ class parser:
         index = self.priority(vec)
         if index is None:
             return code
-        E1:str= "".join(vec[:index])
+        E1:str = "".join(vec[:index])
         ope = vec[index]
-        E2:str= "".join(vec[index+1:])
+        E2:str = "".join(vec[index+1:])
         #return [ ope, *self.resolve_util(E1), *self.resolve_util(E2)]
         return formula_tree(
                 ope,
@@ -375,7 +381,7 @@ class parser:
             if elem.new(E).elemtype is Elem_type.FUNCTION else value.new(E).inner \
             if elem.new(E).elemtype is Elem_type.VALUE    else E , #カンマとるなよ絶対に！
 
-    def resolve_function(self,code:str):
+    def resolve_function(self,code:str) -> "formula_tree":
         funcdata = func.new(code).data
         funcname=funcdata[0]
         #return [funcname]+[self.resolve_util(i)[0] for i in funcdata[1:]]
@@ -383,13 +389,13 @@ class parser:
             funcname,
             Elem_type.FUNCTION,
             [self.resolve_util(i)[0] for i in funcdata[1:]],
-            mode=self.mode
+            mode = self.mode
         )
 
-    def resolve(self):
+    def resolve(self) -> "formula_tree":
         return self.resolve_util(self.code)[0]
 
-    def priority(self,vec:list[str])->int|None:
+    def priority(self,vec:list[str]) -> int|None:
         #配列内にある最も優先順位が低い演算子を探します
         #返り値はindexです
         """
@@ -397,24 +403,18 @@ class parser:
         rankの数字が低いものほど計算順位も低い
         同一のランクが並列に続く場合、式の右に行く程計算順位が低い
         """
-        rankinglist:dict={
-            #演算子優先順位
-            "+":1,"-":1,
-            "*":2,"/":2,"%":2,"@":2,
-            "^":3
-        }
-        rank:int=3
-        index=None
+        rank:int = 3
+        index = None
         for i,j in enumerate(vec):
-            if j in rankinglist.keys():
-                if rank>rankinglist[j]:
-                    rank=rankinglist[j]
-                    index=i
-                elif rank==rankinglist[j]:
+            if j in self.rankinglist.keys():
+                if rank>self.rankinglist[j]:
+                    rank = self.rankinglist[j]
+                    index = i
+                elif rank == self.rankinglist[j]:
                     #右に計算順位が同じ演算子を見つけた場合
                     #右にあるものの方が計算順位が低い
-                    rank=rankinglist[j]
-                    index=i
+                    rank = self.rankinglist[j]
+                    index = i
                 else:
                     pass
             else:
@@ -428,11 +428,11 @@ class formula_tree:
     # mode : lisp(RPM)|PM|wat(wasm)
     def __init__(self,name:str,type_:Elem_type,args:list,mode="lisp"):
         self.mode = mode
-        self.name:str=self.ope2func(name)
-        self.args:list=args
+        self.name:str = self.ope2func(name)
+        self.args:list = args
         self.selftype:Elem_type=type_
 
-    def ope2func(self,name:str)->str:
+    def ope2func(self,name:str) -> str:
         """
         演算子を関数のように見る
         """
@@ -497,7 +497,7 @@ class tree2wat:
 
     def is_num(self,text:str):
         for i in text:
-            if '0' <= i <= '9' or i==".":
+            if '0' <= i <= '9' or i == "." or i == " ":
                 pass
             else:
                 return False
@@ -585,11 +585,11 @@ def __test_00():
     #    elem.new(" sin(x) ").elemtype
     #)
 
-
 def __test_01():
     #par = parser("gcd(b,a % b)",mode="PM")
     # 空文字は 0 として扱う
-    par = parser("gcd(b,a%b)",mode="lisp")
+    par = parser("sqrt(pow(a, 2), pow(b, 2))",mode="lisp")
+    #par = parser("pow(a+b,n)",mode="lisp")
     tree = par.resolve()
     wat_conv = tree2wat(tree)
     stack = wat_conv.gen_code()
@@ -597,9 +597,22 @@ def __test_01():
     pprint(stack)
     print(wat_conv.conv2wat(stack))
 
-if __name__=="__main__":
+def __test02():
+    #par = parser("gcd(b,a % b)",mode="PM")
+    # 空文字は 0 として扱う
+    par = parser("10 ** 20",mode="lisp")
+    #par = parser("pow(a+b,n)",mode="lisp")
+    tree = par.resolve()
+    wat_conv = tree2wat(tree)
+    stack = wat_conv.gen_code()
+    print(tree)
+    pprint(stack)
+    print(wat_conv.conv2wat(stack))
+
+if __name__ == "__main__":
     # __test_00()
-    __test_01()
+    # __test_01()
+    __test02()
 
 """
 fn f(){
