@@ -146,6 +146,7 @@ class elem:
                 str(i) for i in range(10)      #0~9
         ]
         self.code = code
+
     @classmethod
     def new(cls,code):return elem(code)
 
@@ -269,14 +270,15 @@ class parser:
                 str(i) for i in range(10)      #0~9
         ]
         self.rankinglist:dict = {
-            #演算子優先順位
+            # 演算子優先順位
+            "==":0,
             "+":1,"-":1,
             "*":2,"/":2,"%":2,"@":2,
             "^":3
         }
 
     def grouping_number(self,vec:str) -> list[str]:
-        #numberをまとめる
+        # numberをまとめる
         rlist:list[str] = list()
         group:list[str] = list()
         flag:bool = False
@@ -295,7 +297,7 @@ class parser:
         return rlist
 
     def grouping_brackets(self,vec:list[str]) -> list[str]:
-        #functionをまとめる
+        # functionをまとめる
         rlist:list[str] = list()
         group:list[str] = list()
         depth:int = 0
@@ -336,7 +338,7 @@ class parser:
         for i in vec:
             match i:
                 case "+"|"-"|"*"|"/"|"%"|"@"|"^":
-                    if group:#groupがからでなければ
+                    if group:# groupがからでなければ
                         rlist.append("".join(group))
                         group = list()
                     rlist.append(i)
@@ -363,7 +365,6 @@ class parser:
         E1:str = "".join(vec[:index])
         ope = vec[index]
         E2:str = "".join(vec[index+1:])
-        #return [ ope, *self.resolve_util(E1), *self.resolve_util(E2)]
         return formula_tree(
                 ope,
                 Elem_type.OPERATION,
@@ -382,7 +383,6 @@ class parser:
     def resolve_function(self,code:str) -> "formula_tree":
         funcdata = func.new(code).data
         funcname=funcdata[0]
-        #return [funcname]+[self.resolve_util(i)[0] for i in funcdata[1:]]
         return formula_tree(
             funcname,
             Elem_type.FUNCTION,
@@ -405,19 +405,19 @@ class parser:
         index = None
         for i,j in enumerate(vec):
             if j in self.rankinglist.keys():
-                if rank>self.rankinglist[j]:
+                if rank > self.rankinglist[j]:
                     rank = self.rankinglist[j]
                     index = i
                 elif rank == self.rankinglist[j]:
-                    #右に計算順位が同じ演算子を見つけた場合
-                    #右にあるものの方が計算順位が低い
+                    # 右に計算順位が同じ演算子を見つけた場合
+                    # 右にあるものの方が計算順位が低い
                     rank = self.rankinglist[j]
                     index = i
                 else:
                     pass
             else:
                 pass
-        #最も計算順位が1番低いindexを返す
+        # 最も計算順位が1番低いindexを返す
         return index
 
 
@@ -460,6 +460,9 @@ class formula_tree:
         elif self.mode == "PM":
             return f"({' '.join(map(repr,self.args))} {self.name})"
         return f"({' '.join(map(repr,self.args))} {self.name})"
+
+
+## Wat Tools
 
 
 class Wat_data_type(Enum):
@@ -612,11 +615,3 @@ if __name__ == "__main__":
     # __test_00()
     # __test_01()
     __test02()
-
-"""
-fn f(){
-    return g()
-}
-fn g():
-    return f()
-"""
