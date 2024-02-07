@@ -352,9 +352,6 @@ class parser:
         vec = self.split_symbol(vec)
         return vec
 
-    def is_Formula(self,code:str) -> bool:
-        return elem.new(code).elemtype is Elem_type.FORMULA
-
     def resolve_operation(self,code:str) -> "formula_tree":
         #逆ポーランド記法の返り値
         #引数が二つであると決定した
@@ -375,11 +372,12 @@ class parser:
             )
 
     def resolve_util(self,E):
-        return                                                 self.resolve_operation(E)\
-            if self.is_Formula(E)                         else self.resolve_operation(brackets.new(E).inner) \
-            if elem.new(E).elemtype is Elem_type.BRACKETS else self.resolve_function(E) \
-            if elem.new(E).elemtype is Elem_type.FUNCTION else value.new(E).inner \
-            if elem.new(E).elemtype is Elem_type.VALUE    else E , #カンマとるなよ絶対に！
+        elem_type = elem.new(E).elemtype
+        if elem_type   is Elem_type.FORMULA:  return self.resolve_operation(E),
+        elif elem_type is Elem_type.BRACKETS: return self.resolve_operation(brackets.new(E).inner),
+        elif elem_type is Elem_type.FUNCTION: return self.resolve_function(E),
+        elif elem_type is Elem_type.VALUE:    return value.new(E).inner,
+        else :                                return E,        
 
     def resolve_function(self,code:str) -> "formula_tree":
         funcdata = func.new(code).data
