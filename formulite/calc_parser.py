@@ -600,7 +600,8 @@ def __test_01():
 def __test02():
     #par = parser("gcd(b,a % b)",mode="PM")
     # 空文字は 0 として扱う
-    par = parser("10 ** 20",mode="lisp")
+    #par = parser("10 ** 20",mode="lisp")
+    par = parser("sqrt(pow(value1 , 1 + 1) + pow(value2 , 2))",mode="lisp")
     #par = parser("pow(a+b,n)",mode="lisp")
     tree = par.resolve()
     wat_conv = tree2wat(tree)
