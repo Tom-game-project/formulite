@@ -1,5 +1,11 @@
 from enum import Enum,auto
+
+# debug tools
 from pprint import pprint
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
 
 class func:
 
@@ -276,6 +282,7 @@ class parser:
             "*":2,"/":2,"%":2,"@":2,
             "^":3
         }
+        self.length_order = sorted(self.rankinglist.keys(),key=lambda a:len(a))[::-1]
 
     def grouping_number(self,vec:str) -> list[str]:
         # numberをまとめる
@@ -329,7 +336,38 @@ class parser:
                         group.append(i)
                     else:
                         rlist.append(i)
+        return rlist
 
+    def is_symbol(self,index:int,vec:list) -> tuple[bool,str,int]:
+        # (is_match? :bool, string:str, step:int)
+        # マッチしたかに関わらずsplit文字に応じたstepを返却する
+        size = len(vec)
+        for string in self.length_order():# self.length_oerderは長い順に並んだ配列
+            for i,char in enumerate(string): 
+                if 0 <= index+i < size and vec[index+i]!=char:
+                    break
+            else:
+                return (True, string, len(string))
+        return (False, None, 1)
+
+    def split_symbol_test(self,vec:list[str]) -> list[str]:
+        rlist:list[str] = list()
+        group:list[str] = list()
+
+        i = 0
+        size = len(vec)
+        while (i < size):
+            is_match, ope_string, step = self.is_symbol(i,vec)
+            if is_match:
+                if group:
+                    rlist.append("".join(group))
+                    group = list()
+                rlist.append(ope_string)
+            else:
+                group.append(vec[i])
+            i+=step
+        if group:
+            rlist.append("".join(group))
         return rlist
 
     def split_symbol(self,vec:list[str]) -> list[str]:
@@ -346,6 +384,8 @@ class parser:
                     group.append(i)
         if group:
             rlist.append("".join(group))
+        logging.debug("vec " + str(vec))
+        logging.debug("rli " + str(rlist))
         return rlist
 
     def code2vec(self) -> list[str]:
@@ -598,20 +638,25 @@ def __test_01():
     pprint(stack)
     print(wat_conv.conv2wat(stack))
 
-def __test02():
+def __test_02():
     #par = parser("gcd(b,a % b)",mode="PM")
     # 空文字は 0 として扱う
     #par = parser("10 ** 20",mode="lisp")
-    par = parser("sqrt(pow(value1 , 1 + 1) + pow(value2 , 2))",mode="lisp")
+    #par = parser("sqrt(pow(value1 , 1 + 1) + pow(value2 , 2))",mode="lisp")
     #par = parser("pow(a+b,n)",mode="lisp")
+    par = parser("abc + b * c ++ gcd(a+b,b)",mode="lisp")
     tree = par.resolve()
     wat_conv = tree2wat(tree)
     stack = wat_conv.gen_code()
     print(tree)
-    pprint(stack)
+    # pprint(stack)
     print(wat_conv.conv2wat(stack))
+
+def __test_03():
+    pass
+
 
 if __name__ == "__main__":
     # __test_00()
     # __test_01()
-    __test02()
+    __test_02()
