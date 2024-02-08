@@ -275,12 +275,21 @@ class parser:
         ]+[
                 str(i) for i in range(10)      #0~9
         ]
+        # <, <=, >, >=, !=,
         self.rankinglist:dict = {
             # 演算子優先順位
-            "==":0,
+            "&&":-1,"||":-1,
+
+            "==":0,"!=":0,
+            "<":0,">":0,
+            "<=":0,">=":0,
+
             "+":1,"-":1,
-            "*":2,"/":2,"%":2,"@":2,
-            "^":3
+
+            "*":2,"/":2,
+            "%":2,"@":2,
+
+            "^":3,"**":3
         }
         self.length_order = sorted(self.rankinglist.keys(),key=lambda a:len(a))[::-1]
 
@@ -342,7 +351,7 @@ class parser:
         # (is_match? :bool, string:str, step:int)
         # マッチしたかに関わらずsplit文字に応じたstepを返却する
         size = len(vec)
-        for string in self.length_order():# self.length_oerderは長い順に並んだ配列
+        for string in self.length_order:# self.length_oerderは長い順に並んだ配列
             for i,char in enumerate(string): 
                 if 0 <= index+i < size and vec[index+i]!=char:
                     break
@@ -350,7 +359,7 @@ class parser:
                 return (True, string, len(string))
         return (False, None, 1)
 
-    def split_symbol_test(self,vec:list[str]) -> list[str]:
+    def split_symbol(self,vec:list[str]) -> list[str]:
         rlist:list[str] = list()
         group:list[str] = list()
 
@@ -368,24 +377,6 @@ class parser:
             i+=step
         if group:
             rlist.append("".join(group))
-        return rlist
-
-    def split_symbol(self,vec:list[str]) -> list[str]:
-        rlist:list[str] = list()
-        group:list[str] = list()
-        for i in vec:
-            match i:
-                case "+"|"-"|"*"|"/"|"%"|"@"|"^":
-                    if group:# groupがからでなければ
-                        rlist.append("".join(group))
-                        group = list()
-                    rlist.append(i)
-                case _:
-                    group.append(i)
-        if group:
-            rlist.append("".join(group))
-        logging.debug("vec " + str(vec))
-        logging.debug("rli " + str(rlist))
         return rlist
 
     def code2vec(self) -> list[str]:
@@ -453,10 +444,6 @@ class parser:
                     # 右にあるものの方が計算順位が低い
                     rank = self.rankinglist[j]
                     index = i
-                else:
-                    pass
-            else:
-                pass
         # 最も計算順位が1番低いindexを返す
         return index
 
@@ -518,8 +505,8 @@ class Wat_role(Enum):
     OPE   = auto()
 
 
-# parserで変換した後のtreeデータに対して処理を施します
 class tree2wat:
+    # parserで変換した後のtreeデータに対して処理を施します
 
     def __init__(self,tree:formula_tree ,data_type = Wat_data_type.I32):
         #
@@ -597,6 +584,7 @@ class tree2wat:
 
 
 ## test functions
+
 def __test_00():
     texts=[
     " 10 + ( x + log10(2) * sin(x) ) * log10(x)",
@@ -653,10 +641,25 @@ def __test_02():
     print(wat_conv.conv2wat(stack))
 
 def __test_03():
-    pass
+    test_case=[
+        "x**2 + y**2 == 1",
+        "1==x**2+y**2",
+        "gcd(b,a % b)",
+        "sqrt(x**2+y**2)",
+        "1+1+1 == -(1+1)",
+        "0< index + i <= size"
+    ]
+    for i in test_case:
+        par = parser(i,mode="PM")
+        tree = par.resolve()
+        wat_conv = tree2wat(tree)
+        stack = wat_conv.gen_code()
+        print(i,tree)
+        # pprint(stack)
+        # print(wat_conv.conv2wat(stack))
 
 
 if __name__ == "__main__":
     # __test_00()
     # __test_01()
-    __test_02()
+    __test_03()
