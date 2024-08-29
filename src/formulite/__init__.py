@@ -89,13 +89,16 @@ class brackets:
         for i in code:
             match i:
                 case "(":
-                    if depth > 0:rlist.append(i)
+                    if depth > 0:
+                        rlist.append(i)
                     depth += 1
                 case ")":
                     depth -= 1
-                    if depth > 0:rlist.append(i)
+                    if depth > 0:
+                        rlist.append(i)
                 case _:
-                    if depth > 0:rlist.append(i)
+                    if depth > 0:
+                        rlist.append(i)
         rtext = "".join(rlist)
         return self.__inner_content(rtext) if elem.new(rtext).elemtype is Elem_type.BRACKETS else rtext
 
@@ -195,7 +198,7 @@ class elem:
         end_flag = False
         nums:list[str] = list(map(str,range(10)))#1~10の数字のリスト
         for i in code:
-            if (i in nums) and end_flag == False:
+            if (i in nums) and not end_flag:
                 group.append(i)
                 end_flag = True
             elif i == ".":
@@ -203,9 +206,9 @@ class elem:
                     group.append(i)
                 else:
                     raise BaseException("小数点が先頭についてしまっていますよ")
-            elif i == " " and space_flag == False:
+            elif i == " " and not space_flag:
                 pass
-            elif i == " " and space_flag == True:
+            elif i == " " and space_flag:
                 end_flag = True
             else:
                 return False
@@ -405,11 +408,16 @@ class parser:
 
     def resolve_util(self,E):
         elem_type = elem.new(E).elemtype
-        if elem_type   is Elem_type.FORMULA:  return self.resolve_operation(E),
-        elif elem_type is Elem_type.BRACKETS: return self.resolve_operation(brackets.new(E).inner),
-        elif elem_type is Elem_type.FUNCTION: return self.resolve_function(E),
-        elif elem_type is Elem_type.VALUE:    return value.new(E).inner,
-        else :                                return E,        
+        if elem_type   is Elem_type.FORMULA:
+            return self.resolve_operation(E),
+        elif elem_type is Elem_type.BRACKETS:
+            return self.resolve_operation(brackets.new(E).inner),
+        elif elem_type is Elem_type.FUNCTION:
+            return self.resolve_function(E),
+        elif elem_type is Elem_type.VALUE:
+            return value.new(E).inner,
+        else:                                
+            return E,        
 
     def resolve_function(self,code:str) -> "formula_tree":
         funcdata = func.new(code).data
