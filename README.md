@@ -15,7 +15,7 @@ pip install formulite
 ## HOW TO USE
 
 ```python
-from formulite.calc_parser import parser
+from formulite import parser
 
 text="f(x)+g(x,y,z)*5"
 
